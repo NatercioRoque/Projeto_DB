@@ -5,19 +5,11 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-}
-
-model Mesa {
-  numero   Int       @id @db.SmallInt
-  data     DateTime  @default(now())
-  // Relação 1 para N: uma mesa pode ter várias comandas
-  comandas Comanda[]
 }
 
 model Cliente {
@@ -33,10 +25,7 @@ model Cliente {
 model Comanda {
   id   Int      @id @default(autoincrement())
   data DateTime @default(now())
-
-  // Relação com Mesa
-  mesaId Int  @db.SmallInt
-  mesa   Mesa @relation(fields: [mesaId], references: [numero])
+  mesa Int  @db.SmallInt
 
   // Relação com Cliente
   clienteId Int
@@ -44,4 +33,24 @@ model Comanda {
 
   itens Int[]
   total Decimal @db.Decimal(7, 2)
+}
+
+model Cardapio {
+  id         Int     @id @default(autoincrement())
+  nome       String
+  valor      Decimal @db.Decimal(6, 2)
+  categoria  String
+  disponivel Boolean
+  
+  // Relacionamento 1-para-1
+  bebida     Bebida?
+}
+
+model Bebida {
+  id       Int      @id
+  tipo     String
+  safra    Int?     @db.SmallInt // 4 caracteres para o ano da safra
+
+  // A chave estrangeira "id" faz referência direta ao "id" do Cardapio
+  cardapio Cardapio @relation(fields: [id], references: [id])
 }
