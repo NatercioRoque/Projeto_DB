@@ -157,6 +157,25 @@ async function inserirComanda() {
   console.log('\n--- Inserir Comanda ---');
   const mesa = readline.questionInt('Digite o numero da mesa: ');
   
+  console.log('\nDeseja informar uma data para a comanda?');
+  console.log('1. Usar a data atual do momento da criacao');
+  console.log('2. Informar uma data anterior');
+  const opcaoData = readline.questionInt('Opcao: ');
+  
+  let dataComanda;
+  if (opcaoData === 2) {
+    const dataInput = readline.question('Digite a data (DD/MM/AAAA): ');
+    const partesData = dataInput.split('/');
+    if (partesData.length === 3) {
+      const dia = partesData[0].padStart(2, '0');
+      const mes = partesData[1].padStart(2, '0');
+      const ano = partesData[2];
+      dataComanda = new Date(`${ano}-${mes}-${dia}T12:00:00.000Z`);
+    } else {
+      console.log('Formato de data inválido. Usando a data atual...');
+    }
+  }
+
   console.log('\nBuscando o Cliente associado...');
   const termoCliente = readline.question('Digite pelo menos parte do nome do Cliente: ');
   const clienteId = await buscar('cliente', termoCliente);
@@ -203,13 +222,19 @@ async function inserirComanda() {
   }
 
   try {
+    const dataToCreate = {
+      mesa,
+      clienteId,
+      itens,
+      total
+    };
+    
+    if (dataComanda) {
+      dataToCreate.data = dataComanda;
+    }
+
     const novaComanda = await prisma.comanda.create({
-      data: {
-        mesa,
-        clienteId,
-        itens,
-        total
-      }
+      data: dataToCreate
     });
     console.log(`\n✅ Comanda de ID ${novaComanda.id} criada com sucesso para a mesa ${novaComanda.mesa} no valor total de R$ ${novaComanda.total}!`);
   } catch (error) {
