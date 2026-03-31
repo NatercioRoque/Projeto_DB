@@ -13,10 +13,13 @@ datasource db {
 }
 
 model Cliente {
-  id       Int    @id @default(autoincrement())
-  nome     String
-  cpf      String @db.VarChar(14)
-  telefone String @db.VarChar(15)
+  id         Int     @id @default(autoincrement())
+  nome       String
+  cpf        String  @db.VarChar(14)
+  telefone   String  @db.VarChar(15)
+  e_flamengo Boolean @default(false)
+  fa_OP      Boolean @default(false)
+  souseano   Boolean @default(false)
 
   // Relação 1 para N: um cliente pode ter várias comandas
   comandas Comanda[]
@@ -31,8 +34,24 @@ model Comanda {
   clienteId Int
   cliente   Cliente @relation(fields: [clienteId], references: [id])
 
-  itens Int[]
-  total Decimal @db.Decimal(7, 2)
+  // Relação com Garçom
+  id_garcom Int?
+  garcom    Garcom?  @relation(fields: [id_garcom], references: [Id_garcom])
+
+  itens      Int[]
+  total      Decimal  @db.Decimal(7, 2)
+  status     String   @default("ATIVA")
+  finalizada Boolean  @default(false)
+  pagamento  String?
+}
+
+model Garcom {
+  Id_garcom    Int      @id @default(autoincrement())
+  nome         String
+  data_admicao DateTime @db.Date // Dia, Mês e Ano
+  salario      Decimal  @db.Decimal(6, 2) // Max 9999.99
+  
+  comandas     Comanda[]
 }
 
 model Cardapio {

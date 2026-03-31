@@ -150,7 +150,7 @@ async function main() {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
   }
 
-  const comandasCriadas = [];
+  const comandasDataParaInserir = [];
 
   for (let i = 0; i < numeroTotalDeComandas; i++) {
     // Garantir que todos os 15 clientes recebam pelo menos 1 comanda
@@ -173,20 +173,27 @@ async function main() {
     const dataComanda = randomDate(noventaDiasAtras, agora);
     const mesa = Math.floor(Math.random() * 20) + 1; // Mesas de 1 a 20
 
-    const comanda = await prisma.comanda.create({
-      data: {
-        mesa,
-        data: dataComanda,
-        clienteId,
-        itens: itensIds,
-        total: totalComanda
-      }
+    comandasDataParaInserir.push({
+      mesa,
+      data: dataComanda,
+      clienteId,
+      itens: itensIds,
+      total: totalComanda
     });
+  }
 
+  // Ordenar as comandas por data, das mais antigas para as mais recentes
+  comandasDataParaInserir.sort((a, b) => a.data.getTime() - b.data.getTime());
+
+  const comandasCriadas = [];
+  for (const dadosComanda of comandasDataParaInserir) {
+    const comanda = await prisma.comanda.create({
+      data: dadosComanda
+    });
     comandasCriadas.push(comanda);
   }
 
-  console.log(`✅ ${comandasCriadas.length} comandas inseridas com sucesso.\n`);
+  console.log(`✅ ${comandasCriadas.length} comandas inseridas ordenadamente por data com sucesso.\n`);
   console.log('🏁 Banco de dados populado com sucesso!');
 }
 
